@@ -1,23 +1,36 @@
 import { Client } from "@gradio/client";
 
 /* -------------------------------
+   Demo Request Limit
+--------------------------------*/
+let demoCount = 0;
+const DEMO_LIMIT = 25;
+
+/* -------------------------------
    AI Agricultural Advice Function
 --------------------------------*/
 async function getAIAdvice(query) {
+
+  if (demoCount >= DEMO_LIMIT) {
+    return "Demo limit reached. Please contact the developer for full access.";
+  }
+
+  demoCount++;
+
   try {
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
+        "Authorization": `Bearer ${import.meta.env.VITE_GROQ_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "llama3-8b-8192",
         messages: [
           {
             role: "system",
-            content: "You are an expert agricultural advisor helping farmers."
+            content: "You are an expert agricultural advisor helping farmers with practical crop, soil, pest, irrigation, and fertilizer advice."
           },
           {
             role: "user",
@@ -30,7 +43,7 @@ async function getAIAdvice(query) {
     const data = await response.json();
 
     if (!data.choices) {
-      console.error("OpenAI error:", data);
+      console.error("Groq API error:", data);
       return "AI advice could not be generated.";
     }
 
