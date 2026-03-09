@@ -45,10 +45,10 @@ async function getAIAdvice(query) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Groq API error:", data);
+      console.error("Groq API error full response:", data);
       return "AI advice could not be generated.";
     }
-
+    console.log("Groq response:", data);
     return data.choices[0].message.content;
 
   } catch (error) {
