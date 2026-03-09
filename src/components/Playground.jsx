@@ -183,6 +183,7 @@ export default function Playground() {
 
       setResult({
         translation: result.text,
+        advice: result.advice || null
       });
       setIsProcessing(false);
       setProcessingStatus('');
@@ -498,6 +499,17 @@ export default function Playground() {
                 <p className="text-lg text-slate-200 leading-relaxed font-body">
                   "{result.translation}"
                 </p>
+                {result.advice && (
+                <div className="mt-6 bg-purple-900/40 rounded-xl border border-purple-500/30 p-6">
+                  <h4 className="text-purple-300 font-semibold mb-2">
+                    🤖 Crovia AI Agricultural Advice
+                  </h4>
+              
+                  <p className="text-slate-200 leading-relaxed">
+                    {result.advice}
+                  </p>
+                </div>
+              )}
               </div>
 
               <div className="mt-6 flex justify-end">
