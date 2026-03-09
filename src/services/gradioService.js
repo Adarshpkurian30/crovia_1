@@ -1,69 +1,85 @@
+import { Client } from "@gradio/client";
 
+/* -------------------------------
+   AI Agricultural Advice Function
+--------------------------------*/
 async function getAIAdvice(query) {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert agricultural advisor helping farmers."
-        },
-        {
-          role: "user",
-          content: `Farmer query: ${query}. Give practical farming advice.`
-        }
-      ]
-    })
-  });
+  try {
 
-  const data = await response.json();
-  return data.choices[0].message.content;
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert agricultural advisor helping farmers."
+          },
+          {
+            role: "user",
+            content: `Farmer query: ${query}. Give practical farming advice in simple language.`
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.choices) {
+      console.error("OpenAI error:", data);
+      return "AI advice could not be generated.";
+    }
+
+    return data.choices[0].message.content;
+
+  } catch (error) {
+    console.error("AI Advice Error:", error);
+    return "Unable to generate agricultural advice.";
+  }
 }
- * Connects to the agri-whisper-api Gradio space and processes the audio.
- * @param {Blob} audioBlob - The audio file to process
- * @param {function} onStatusChange - Callback for status updates
- * @returns {Promise<{text: string}>} - The translation result
- */
+
+
+/* -----------------------------------------
+   Process Audio using Crovia Whisper Model
+------------------------------------------*/
 export async function processAudioWithGradio(audioBlob, onStatusChange) {
-    try {
-        onStatusChange?.("Connecting to Agri-Whisper Model...");
 
-        // Connect to the specific space
-        const client = await Client.connect("Cro-via/agri-whisper-api");
+  try {
 
-        onStatusChange?.("Processing audio (this typically takes 30-60s)...");
+    onStatusChange?.("Connecting to Agri-Whisper Model...");
 
-        // The error message explicitly stated "No value provided for required parameter: audio_path"
-        const result = await client.predict("/predict", {
-            audio_path: audioBlob
-        });
+    const client = await Client.connect("Cro-via/agri-whisper-api");
 
-        // The result from client.predict matches the return values of the Gradio function.
-        // It is typically an object with 'data' array.
+    onStatusChange?.("Processing audio (this typically takes 30-60s)...");
 
-       if (result.data && result.data.length > 0) {
+    const result = await client.predict("/predict", {
+      audio_path: audioBlob
+    });
 
-    const translation = result.data[0];
+    if (result.data && result.data.length > 0) {
 
-    onStatusChange?.("Consulting Agricultural AI...");
+      const translation = result.data[0];
 
-    const advice = await getAIAdvice(translation);
+      onStatusChange?.("Consulting Agricultural AI...");
 
-    return {
+      const advice = await getAIAdvice(translation);
+
+      return {
         text: translation,
         advice: advice
-    };
-}
+      };
 
-        throw new Error("No data received from model");
-
-    } catch (error) {
-        console.error("Gradio API Error:", error);
-        throw error;
     }
+
+    throw new Error("No data received from model");
+
+  } catch (error) {
+    console.error("Gradio API Error:", error);
+    throw error;
+  }
+
 }
