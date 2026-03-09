@@ -30,19 +30,21 @@ async function getAIAdvice(query) {
         messages: [
           {
             role: "system",
-            content: "You are an expert agricultural advisor helping farmers with practical crop, soil, pest, irrigation, and fertilizer advice."
+            content: "You are an expert agricultural advisor helping farmers with practical crop advice."
           },
           {
             role: "user",
             content: `Farmer query: ${query}. Give practical farming advice in simple language.`
           }
-        ]
+        ],
+        temperature: 0.7,
+        max_tokens: 300
       })
     });
 
     const data = await response.json();
 
-    if (!data.choices) {
+    if (!response.ok) {
       console.error("Groq API error:", data);
       return "AI advice could not be generated.";
     }
