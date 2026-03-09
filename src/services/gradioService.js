@@ -30,7 +30,8 @@ async function getAIAdvice(query) {
         messages: [
           {
             role: "system",
-            content: "You are an expert agricultural advisor helping farmers with practical crop advice."
+           content: `Farmer query: ${query}. Give practical farming advice. 
+          First give the answer in English, then give the same advice translated into Malayalam.`
           },
           {
             role: "user",
