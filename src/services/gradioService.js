@@ -1,6 +1,33 @@
 
 import { Client } from "@gradio/client";
+// Function to get AI agricultural advice from OpenAI / GPT
+async function getAIAdvice(query) {
 
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
+        },
+        body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are an expert agricultural advisor helping farmers."
+                },
+                {
+                    role: "user",
+                    content: `A farmer asked: ${query}. Give practical farming advice in simple language.`
+                }
+            ]
+        })
+    });
+
+    const data = await response.json();
+
+    return data.choices[0].message.content;
+}
 /**
  * Connects to the agri-whisper-api Gradio space and processes the audio.
  * @param {Blob} audioBlob - The audio file to process
@@ -24,12 +51,19 @@ export async function processAudioWithGradio(audioBlob, onStatusChange) {
         // The result from client.predict matches the return values of the Gradio function.
         // It is typically an object with 'data' array.
 
-        if (result.data && result.data.length > 0) {
-            // Assuming the first output is the translation/text
-            return {
-                text: result.data[0]
-            };
-        }
+       if (result.data && result.data.length > 0) {
+
+    const translation = result.data[0];
+
+    onStatusChange?.("Consulting Agricultural AI...");
+
+    const advice = await getAIAdvice(translation);
+
+    return {
+        text: translation,
+        advice: advice
+    };
+}
 
         throw new Error("No data received from model");
 
