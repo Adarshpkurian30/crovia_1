@@ -48,7 +48,7 @@ Malayalam:
           }
         ],
         temperature: 0.7,
-        max_tokens: 700
+        max_tokens: 1000
       })
     });
 
